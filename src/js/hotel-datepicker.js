@@ -895,7 +895,10 @@ export default class HotelDatepicker {
 		const time = parseInt(day.getAttribute('time'), 10);
 		this.addClass(day, 'datepicker__month-day--selected');
 
-		if (isSelectStart) {
+		if (this.singleDaySelection) {
+			this.start = time;
+			this.end = time;
+		} else if (isSelectStart) {
 			this.start = time;
 			this.end = false;
 		} else if (this.start) {
