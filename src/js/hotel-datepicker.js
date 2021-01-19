@@ -15,6 +15,7 @@ export default class HotelDatepicker {
 		this.infoFormat = opts.infoFormat || this.format;
 		this.separator = opts.separator || ' - ';
 		this.startOfWeek = opts.startOfWeek || 'sunday'; // Or monday
+		this.showWeekNumbers = opts.showWeekNumbers || false;
 		this.startDate = opts.startDate || new Date();
 		this.endDate = opts.endDate || false;
 		this.minNights = opts.minNights || 1;
@@ -111,8 +112,29 @@ export default class HotelDatepicker {
 		});
 	}
 
+	getWeekNumber(week) {
+		const date = new Date(week);
+
+		let year = date.getFullYear();
+		let month = date.getMonth() + 1;
+		let day = date.getDate() + 1;
+
+		let a = Math.floor((14 - month) / 12);
+		let y = year + 4800 - a;
+		let m = month + (12 * a) - 3;
+		let jd = day + Math.floor(((153 * m) + 2) / 5) + 
+				(365 * y) + Math.floor(y / 4) - Math.floor(y / 100) + 
+				Math.floor(y / 400) - 32045;
+
+		let d4 = (jd + 31741 - (jd % 7)) % 146097 % 36524 % 1461;
+		let L = Math.floor(d4 / 1460);
+		let d1 = ((d4 - L) % 365) + L;
+
+		return Math.floor(d1 / 7) + 1;
+	}
+
 	getWeekDayNames() {
-		let week = '';
+		let week = this.showWeekNumbers ? '<th class="datepicker__week-number-name"></th>' : '';
 
         // Start from monday if we passed that option
 		if (this.startOfWeek === 'monday') {
@@ -462,6 +484,10 @@ export default class HotelDatepicker {
 
 			html += '<tr class="datepicker__week-row">';
 
+			if (this.showWeekNumbers) {
+				html += `<td class="datepicker__week-number datepicker__month-day--invalid">${this.getWeekNumber(days[week * 7].date)}</td>`
+			}
+
             // Create the days of a week, one by one
 			for (let i = 0; i < 7; i++) {
 				let _day = (this.startOfWeek === 'monday') ? i + 1 : i;
@@ -786,7 +812,7 @@ export default class HotelDatepicker {
 		}
 
         // Get every td in the months table: our days
-		const days = this.datepicker.getElementsByTagName('td');
+		const days = this.datepicker.getElementsByClassName('datepicker__month-day');
 
         // Iterate each day and assign an appropriate HTML class
         // if they are selected in the date range

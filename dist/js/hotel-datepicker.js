@@ -17,6 +17,7 @@ var HotelDatepicker = function HotelDatepicker(input, options) {
 	this.infoFormat = opts.infoFormat || this.format;
 	this.separator = opts.separator || ' - ';
 	this.startOfWeek = opts.startOfWeek || 'sunday'; // Or monday
+	this.showWeekNumbers = opts.showWeekNumbers || false;
 	this.startDate = opts.startDate || new Date();
 	this.endDate = opts.endDate || false;
 	this.minNights = opts.minNights || 1;
@@ -113,10 +114,31 @@ HotelDatepicker.prototype.setFechaI18n = function setFechaI18n () {
 	});
 };
 
+HotelDatepicker.prototype.getWeekNumber = function getWeekNumber (week) {
+	var date = new Date(week);
+
+	var year = date.getFullYear();
+	var month = date.getMonth() + 1;
+	var day = date.getDate() + 1;
+
+	var a = Math.floor((14 - month) / 12);
+	var y = year + 4800 - a;
+	var m = month + (12 * a) - 3;
+	var jd = day + Math.floor(((153 * m) + 2) / 5) + 
+			(365 * y) + Math.floor(y / 4) - Math.floor(y / 100) + 
+			Math.floor(y / 400) - 32045;
+
+	var d4 = (jd + 31741 - (jd % 7)) % 146097 % 36524 % 1461;
+	var L = Math.floor(d4 / 1460);
+	var d1 = ((d4 - L) % 365) + L;
+
+	return Math.floor(d1 / 7) + 1;
+};
+
 HotelDatepicker.prototype.getWeekDayNames = function getWeekDayNames () {
 		var this$1 = this;
 
-	var week = '';
+	var week = this.showWeekNumbers ? '<th class="datepicker__week-number-name"></th>' : '';
 
         // Start from monday if we passed that option
 	if (this.startOfWeek === 'monday') {
@@ -476,6 +498,10 @@ HotelDatepicker.prototype.createMonthDomString = function createMonthDomString (
 
 		html += '<tr class="datepicker__week-row">';
 
+		if (this$1.showWeekNumbers) {
+			html += "<td class=\"datepicker__week-number datepicker__month-day--invalid\">" + (this$1.getWeekNumber(days[week * 7].date)) + "</td>";
+		}
+
             // Create the days of a week, one by one
 		for (var i$2 = 0; i$2 < 7; i$2++) {
 			var _day$2 = (this$1.startOfWeek === 'monday') ? i$2 + 1 : i$2;
@@ -804,7 +830,7 @@ HotelDatepicker.prototype.showSelectedDays = function showSelectedDays () {
 	}
 
         // Get every td in the months table: our days
-	var days = this.datepicker.getElementsByTagName('td');
+	var days = this.datepicker.getElementsByClassName('datepicker__month-day');
 
         // Iterate each day and assign an appropriate HTML class
         // if they are selected in the date range
