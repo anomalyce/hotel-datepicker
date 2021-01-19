@@ -119,7 +119,7 @@ HotelDatepicker.prototype.getWeekNumber = function getWeekNumber (week) {
 
 	var year = date.getFullYear();
 	var month = date.getMonth() + 1;
-	var day = date.getDate() + 1;
+	var day = date.getDate();
 
 	var a = Math.floor((14 - month) / 12);
 	var y = year + 4800 - a;
@@ -501,7 +501,15 @@ HotelDatepicker.prototype.createMonthDomString = function createMonthDomString (
 		html += '<tr class="datepicker__week-row">';
 
 		if (this$1.showWeekNumbers) {
-			html += "<td class=\"datepicker__week-number datepicker__month-day--invalid\">" + (this$1.getWeekNumber(days[week * 7].date)) + "</td>";
+			var _weekIndex = (week * 7) + (this$1.startOfWeek === 'monday' ? 1 : 0);
+			var _week = days[_weekIndex];
+			var _weekLast = days[_weekIndex + 6];
+
+			if (_week.type === 'visibleMonth' || _weekLast.type === 'visibleMonth') {
+				html += "<td class=\"datepicker__week-number datepicker__month-day--invalid\" data-date=\"" + (_weekLast.date) + "\">" + (this$1.getWeekNumber(_week.date)) + "</td>";
+			} else {
+				html += "<td class=\"datepicker__week-number datepicker__month-day--invalid datepicker__week-number--empty\" data-date=\"" + (_weekLast.date) + "\"></td>";
+			}
 		}
 
             // Create the days of a week, one by one

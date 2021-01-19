@@ -117,7 +117,7 @@ export default class HotelDatepicker {
 
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		let day = date.getDate() + 1;
+		let day = date.getDate();
 
 		let a = Math.floor((14 - month) / 12);
 		let y = year + 4800 - a;
@@ -368,7 +368,7 @@ export default class HotelDatepicker {
         // Months section
 		html += '<div class="datepicker__months">';
 
-		let colspan = this.showWeekNumbers ? 6 : 5
+		let colspan = this.showWeekNumbers ? 6 : 5;
 
         // Print single months
 		for (let i = 1; i <= 2; i++) {
@@ -487,7 +487,15 @@ export default class HotelDatepicker {
 			html += '<tr class="datepicker__week-row">';
 
 			if (this.showWeekNumbers) {
-				html += `<td class="datepicker__week-number datepicker__month-day--invalid">${this.getWeekNumber(days[week * 7].date)}</td>`
+				let _weekIndex = (week * 7) + (this.startOfWeek === 'monday' ? 1 : 0);
+				let _week = days[_weekIndex];
+				let _weekLast = days[_weekIndex + 6];
+
+				if (_week.type === 'visibleMonth' || _weekLast.type === 'visibleMonth') {
+					html += `<td class="datepicker__week-number datepicker__month-day--invalid" data-date="${_weekLast.date}">${this.getWeekNumber(_week.date)}</td>`;
+				} else {
+					html += `<td class="datepicker__week-number datepicker__month-day--invalid datepicker__week-number--empty" data-date="${_weekLast.date}"></td>`;
+				}
 			}
 
             // Create the days of a week, one by one
